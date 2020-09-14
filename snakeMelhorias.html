@@ -1,0 +1,196 @@
+<!--Significado do doctype: doctype é uma tag utilizada para definir a versão html utilizada, 
+    não é uma tag html e sim uma tag de tipagem de documento, ao abrir este arquivo em seu 
+    navegador ele identificará que é um html e se comportará de acordo com o necessario para executar html e css
+    quando utilizado apenas o doctype e a sigla html significa que a versão de html utilizada é html 5
+    em outras versões existia endereçamentos mostrando qual versão era e apontando para devidas documentações-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SnakeGame</title>
+    </head>
+<body>
+<!--a tag div é utilizada para definir uym seção, uma sivisão no html, e 
+    pode atraves do id ser acessada pelo css ou pelo javascript
+    em geral a tag div aplica um break, pulando uma linha após sua disposição-->
+<div id="score">0</div>
+<canvas id="gameCanvas"width="300" height="300"></canvas>
+<!--a tag style é utilizado para definir parametros de estilo do html, por exemplo,
+     vc pode pegar elementos pelo id ou pode definir de todos os elementos, pode definir 
+     que todos os elementos com h1 tenham a cor verde em seu conteudo-->
+<style>
+#gameCanvas{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+}
+#score{
+    text-align: center;
+    font-size: 140px;
+}
+</style>
+
+<script>
+//contantes do game
+const canvasBorderColour= "black";
+const canvasBkpgrdColour= "white";
+const snakeColour = "grey";
+const snakeBorderColour = "black";
+
+let snake = [
+    {x:150, y:150},
+    {x:140, y:150},
+    {x:130, y:150},
+    {x:120, y:150},
+    {x:110, y:150},
+]
+
+
+
+//user score
+let score = 0;
+// velocidade horizontal
+let dx= 10;
+//velocidade vertical
+let dy=0;
+
+
+
+
+
+//atribui o elemento do canvas a uma variavel do javascript e define o contexto
+var gameCanvas = document.getElementById("gameCanvas");
+var ctx= gameCanvas.getContext("2d");
+//define as cores sobre o canvas com as constantes a cima definidas;
+ctx.fillStyle=canvasBkpgrdColour;
+ctx.strokeStyle=canvasBorderColour;
+// desenha primeiramente o fundo na cor definida e após isto desenha a borda
+ctx.fillRect(0,0,gameCanvas.width, gameCanvas.height);
+ctx.strokeRect(0,0,gameCanvas.width, gameCanvas.height);
+
+//gatilhos para primeiras ações do jogo
+main();
+creatFood();
+/** o metodo addEventListener do javascript serve como função que através de um evento irá chamar 
+um metodo, neste caso aqui ele irá chamar o metodo que mexe a cobra dependendo de qualquer chave pressionada*/ 
+document.addEventListener("keydown",changeDirection);
+
+
+//metodo main do jogo
+
+function main(){
+    setTimeout(function onTick(){
+        clearCanvas();
+        drawFood();
+        advanceSnake();
+        drawSnake();
+        main();
+    },100)
+}
+
+
+function clearCanvas() {
+      //  Select the colour to fill the drawing
+      ctx.fillStyle = canvasBkpgrdColour;
+      //  Select the colour for the border of the canvas
+      ctx.strokestyle = canvasBorderColour;
+
+      // Draw a "filled" rectangle to cover the entire canvas
+      ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+      // Draw a "border" around the entire canvas
+      ctx.strokeRect(0, 0, gameCanvas.width, gameCanvas.height);
+    }
+// metodo para desenhar a comida no canvas
+    function drawFood(){
+    ctx.fillStyle = "red";
+    ctx.strokeStyle = "darkred";
+    ctx.fillRect(foodX,foodY,10,10);
+    ctx.strokeRect(foodX,foodY,10,10);
+}
+// metodo que faz a cobra aumentar ao melhorar o score
+
+function advanceSnake(){
+        const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+        snake.unshift(head);
+        const didEatFood = snake[0].x === foodX && snake[0].y === foodY;
+        if(didEatFood){
+            score += 10
+            document.getElementById('score').innerHTML = score;
+            creatFood();
+        }else{
+            snake.pop();
+        }
+}
+
+// ponto randomico onde a comida será apresentada
+function randomCoordinates(min,max){
+    return Math.round((Math.random() * (max-min) + min) /10 ) * 10; 
+
+}
+
+// função onde a comida será criada
+function creatFood(){
+    foodX = randomCoordinates(0,gameCanvas.width - 10);
+    foodY = randomCoordinates(0,gameCanvas.height - 10)
+    snake.forEach(function isFoodOnSnake(part){
+        const foodOnSnake = part.x == foodX 
+        && part.y == foodY
+        if(foodOnSnake){
+            creatFood;
+        } 
+    });
+
+}
+
+function drawSnake(){
+    snake.forEach(drawSnakePart);
+}
+
+//o  script abaixo adiciona a cobra ao canvas do game
+function drawSnakePart(snakePart){
+    ctx.fillStyle ='grey';
+    ctx.strokeStyle='black';
+    ctx.fillRect(snakePart.x, snakePart.y, 10,10);
+    ctx.strokeRect(snakePart.x, snakePart.y, 10,10);
+
+}
+
+//o script abaixo habilita as funções de movimento da cobra do game através das setas
+/* @param { object } event - The keydown event*/
+function changeDirection(event){
+    // definido comportamento das direções e 'chaves ' dos botões apertados
+      const LEFT_KEY = 37;
+      const RIGHT_KEY = 39;
+      const UP_KEY = 38;
+      const DOWN_KEY = 40;
+      const keyPressed = event.keyCode;
+
+      const goingUp = dy === -10;
+      const goingDown = dy === 10;
+      const goingRight = dx === 10;
+      const goingLeft = dx === -10;
+// comportamento ao capturar evento da chave selecionada (botão)
+if (keyPressed === LEFT_KEY && !goingRight) {
+        dx = -10;
+        dy = 0;
+      }
+      if (keyPressed === UP_KEY && !goingDown) {
+        dx = 0;
+        dy = -10;
+      }
+      if (keyPressed === RIGHT_KEY && !goingLeft) {
+        dx = 10;
+        dy = 0;
+      }
+      if (keyPressed === DOWN_KEY && !goingUp) {
+        dx = 0;
+        dy = 10;
+      }
+
+}
+// até aqui o codigo foi corrigido
+
+</script>    
+
+</body>
+</html>
